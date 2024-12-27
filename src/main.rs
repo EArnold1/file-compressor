@@ -13,9 +13,9 @@ fn main() {
     });
 
     if compressor.flag == "-c" {
-        compressor.compress_file();
+        compressor.z_compress_file();
     } else if compressor.flag == "-dc" {
-        compressor.decompress_file();
+        compressor.z_decompress_file();
     } else {
         eprintln!("invalid syntax")
     }
