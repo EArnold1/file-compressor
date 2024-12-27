@@ -15,7 +15,7 @@ fn main() {
     if compressor.flag == "-c" {
         compressor.z_compress_file();
     } else if compressor.flag == "-dc" {
-        compressor.z_decompress_file();
+        compressor.decompress_file();
     } else {
         eprintln!("invalid syntax")
     }
