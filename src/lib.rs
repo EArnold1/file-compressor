@@ -7,6 +7,8 @@ use std::{
     fs::{self, File},
     io::Write,
 };
+use zip::write::SimpleFileOptions;
+use zip::{ZipArchive, ZipWriter};
 pub struct Compressor {
     pub flag: String,
     source: String,
@@ -95,11 +97,26 @@ impl Compressor {
         println!("file de-compressed");
     }
 
+    pub fn compress_file(&self) {
+        let buf = fs::read(&self.source).unwrap();
+        let mut zp = ZipWriter::new(File::create(&self.target).unwrap());
+
+        let options =
+            SimpleFileOptions::default().compression_method(zip::CompressionMethod::Bzip2);
+
+        zp.start_file(&self.source, options).unwrap();
+        zp.write(&buf).unwrap();
+
+        zp.finish().unwrap();
+
+        println!("file compression complete")
+    }
+
     pub fn decompress_file(&self) {
         let file = fs::File::open(&self.source).unwrap();
 
         //using the archive reader function
-        let mut archive = zip::ZipArchive::new(file).unwrap();
+        let mut archive = ZipArchive::new(file).unwrap();
 
         for i in 0..archive.len() {
             let mut file = archive.by_index(i).unwrap();

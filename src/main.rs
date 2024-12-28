@@ -13,7 +13,7 @@ fn main() {
     });
 
     if compressor.flag == "-c" {
-        compressor.z_compress_file();
+        compressor.compress_file();
     } else if compressor.flag == "-dc" {
         compressor.decompress_file();
     } else {
