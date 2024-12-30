@@ -12,7 +12,7 @@ use zip::{ZipArchive, ZipWriter};
 pub struct Compressor {
     pub flag: String,
     source: String,
-    target: String,
+    target: Option<String>,
 }
 
 impl Compressor {
@@ -31,22 +31,23 @@ impl Compressor {
             }
         };
 
-        let target = match args.next() {
-            Some(s) => s,
-            None => {
-                return Err("provide filename for compressed file");
-            }
-        };
-
         Ok(Compressor {
             flag,
             source,
-            target,
+            target: args.next(),
         })
     }
 
     pub fn gz_compress_file(&self) {
-        let mut e = GzEncoder::new(File::create(&self.target).unwrap(), Compression::default());
+        let target = match &self.target {
+            Some(t) => t,
+            None => {
+                eprintln!("specify target for file compression");
+                return;
+            }
+        };
+
+        let mut e = GzEncoder::new(File::create(target).unwrap(), Compression::default());
 
         let buf = fs::read(&self.source).unwrap();
 
@@ -57,7 +58,16 @@ impl Compressor {
     }
 
     pub fn z_compress_file(&self) {
-        let mut e = ZlibEncoder::new(File::create(&self.target).unwrap(), Compression::default());
+        let target = match &self.target {
+            Some(t) => t,
+            None => {
+                eprintln!("specify target for file compression");
+                return;
+            }
+        };
+
+        let mut e: ZlibEncoder<File> =
+            ZlibEncoder::new(File::create(target).unwrap(), Compression::new(10));
 
         let buf = fs::read(&self.source).unwrap();
 
@@ -68,11 +78,19 @@ impl Compressor {
     }
 
     pub fn gz_decompress_file(&self) {
+        let target = match &self.target {
+            Some(t) => t,
+            None => {
+                eprintln!("specify target for file compression");
+                return;
+            }
+        };
+
         let buf = fs::read(&self.source).unwrap();
 
         let mut d = GzDecoder::new(&buf[..]);
 
-        let mut df = File::create(&self.target).unwrap();
+        let mut df = File::create(target).unwrap();
 
         let mut s = Vec::new();
         d.read_to_end(&mut s).unwrap();
@@ -83,11 +101,18 @@ impl Compressor {
     }
 
     pub fn z_decompress_file(&self) {
+        let target = match &self.target {
+            Some(t) => t,
+            None => {
+                eprintln!("specify target for file compression");
+                return;
+            }
+        };
         let buf = fs::read(&self.source).unwrap();
 
         let mut d = ZlibDecoder::new(&buf[..]);
 
-        let mut df = File::create(&self.target).unwrap();
+        let mut df = File::create(target).unwrap();
 
         let mut s = Vec::new();
         d.read_to_end(&mut s).unwrap();
@@ -98,8 +123,16 @@ impl Compressor {
     }
 
     pub fn compress_file(&self) {
+        let target = match &self.target {
+            Some(t) => t,
+            None => {
+                eprintln!("specify target for file compression");
+                return;
+            }
+        };
+
         let buf = fs::read(&self.source).unwrap();
-        let mut zp = ZipWriter::new(File::create(&self.target).unwrap());
+        let mut zp = ZipWriter::new(File::create(target).unwrap());
 
         let options =
             SimpleFileOptions::default().compression_method(zip::CompressionMethod::Bzip2);
